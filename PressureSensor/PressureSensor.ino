@@ -1,12 +1,11 @@
 /*
 Water motor control code
-
-
 */
 
 // include the library code:
 #include <EEPROM.h>
 #include <LiquidCrystal.h>
+#include "time_delay.h"
 
 
 #define ON_INTERVL					5	//On Interval in minutes
@@ -31,52 +30,9 @@ state Current_state = TO_BE_OFF;
 const int rs = 6, en = 5, d4 = 8, d5 = 9, d6 = 10, d7 = 11;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
-class CTimeDelay
-{
-private:
-	bool isInDelay;
-public:
-	CTimeDelay()
-	{
-		isInDelay = false;
-	}
-	void TimeDelay(void (*DelayFunc)(), uint16_t delay)
-	{
-		long mills = millis();
-		if(((mills%delay) < 20 ) && !isInDelay)
-		{
-			DelayFunc();
-			isInDelay=true;
-		}
-		else
-		{
-			if(((mills%delay) > 20) && isInDelay)
-			{
-				isInDelay=false;
-			}
-		}
-	}
-};
 
 CTimeDelay* ptimeDelayForPressurreReads;
-
-//bool isInDelay = false;
-//void TimeDelay(void (*DelayFunc)(), uint16_t delay)
-//{
-//	long mills = millis();
-//	if(((mills%delay) < 20 ) && !isInDelay)
-//	{
-//		DelayFunc();
-//		isInDelay=true;
-//	}
-//	else
-//	{
-//		if(((mills%delay) > 20) && isInDelay)
-//		{
-//			isInDelay=false;
-//		}
-//	}
-//}
+CTimeDelay td;
 
 int total=0;
 int index=0;
@@ -97,8 +53,7 @@ void PrintPressure()
   // add the reading to the total:
   total = total + readings[index];
   // advance to the next position in the array:
-  index = index + 1;
-
+  index++;
 
 
   // calculate the average:
@@ -235,17 +190,17 @@ void loop() {
 	}
 }
 
-void led_blink(short frequency, short interval)
-{
-	if((diffMills % frequency) < interval)
-	{
-		digitalWrite(LED_BUILTIN, HIGH);
-	}
-	else
-	{
-		digitalWrite(LED_BUILTIN, LOW);
-	}
-}
+//void led_blink(short frequency, short interval)
+//{
+//	if((diffMills % frequency) < interval)
+//	{
+//		digitalWrite(LED_BUILTIN, HIGH);
+//	}
+//	else
+//	{
+//		digitalWrite(LED_BUILTIN, LOW);
+//	}
+//}
 
 //void print_total_run_time()
 //{
@@ -257,21 +212,37 @@ void led_blink(short frequency, short interval)
 
 
 #pragma region PrintTimeInMillsToLCD
+/*
+ * @brefif Returns remaining seconds in a previde mills
+ * @ Time min miliseconds.
+ */
 unsigned short get_seconds_in_a_miniute(long int mills)
 {
 	return (mills / 1000) % 60;
 }
 
+/*
+ * @breif returns reaming minutes of given mills.
+ * @param time in miliseconds.
+ */
 unsigned short get_minutes_in_a_hour(long int mills)
 {
 	return (mills / 60000) % 60;  
 }
 
+/*
+ * Convert mills to hours
+ * @param Time in miliseconds.
+ */
 unsigned short get_hours(long int mills)
 {
 	return mills / (3600000);
 }
 
+/*
+ * @breif Print time on LCD diplsay
+ * @param time in miliseconds
+ */
 void lcd_print_time(long int mills)
 {
 	lcd.setCursor(7,1);
