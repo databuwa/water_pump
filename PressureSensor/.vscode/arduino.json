@@ -1,0 +1,5 @@
+{
+    "sketch": "PressureSensor.ino",
+    "board": "arduino:avr:uno",
+    "port": "COM9"
+}
